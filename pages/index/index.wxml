@@ -2,11 +2,11 @@
 <view class="container">
   <view class="row">
     <text>身份类型:</text>
-    <input bindinput="pidTypeInput" placeholder="请输入身份类型" value="{{pidType}}"/>
+    <input bindinput="IdTypeInput" placeholder="请输入身份类型" value="{{IdType}}"/>
   </view>
   <view class="row">
     <text>身份id:</text>
-    <input bindinput="pidInput" placeholder="请输入身份id" value="{{pid}}"/>
+    <input bindinput="PidInput" placeholder="请输入身份id" value="{{Pid}}"/>
   </view>
   <view class="row">
     <button bindtap="getPidInfoButton">getPidInfo</button>

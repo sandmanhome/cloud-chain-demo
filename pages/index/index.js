@@ -1,4 +1,6 @@
 //index.js
+const { fetchFunc } = require('../../miniprogram_npm/icbsc-fetch.js/index.js');
+
 //获取应用实例
 const app = getApp()
 
@@ -6,20 +8,20 @@ const testInfo = '{"data":[{"visitTime":"2012-11-30","diagnosis":" 高血压","m
 
 Page({
   data: {
-    pidType: 0,
-    pid: "420106201101011919",
+    IdType: 0,
+    Pid: "420106201101011919",
   },
   //事件处理函数
   getPidInfo: function() {
     console.debug("start getPidInfo")
   },
 
-  pidTypeInput: function(e) {
+  IdTypeInput: function(e) {
     this.setData({
       pidType: e.detail.value
     })
   },
-  pidInput: function (e) {
+  PidInput: function (e) {
     this.setData({
       pid: e.detail.value
     })
@@ -27,29 +29,50 @@ Page({
 
   getPidInfoButton: function() {
     console.debug("getPidInfo: ", this.data)
-    try {
-      let info = JSON.parse(testInfo);
-      if (info.success || info.success == "true") {
-        app.globalData.info = info.data
-        wx.navigateTo({
-          url: '../info/info',
-        })
-      } else {
-        console.error('getPidInfo error', info.errorMessage)
+    let fetch = fetchFunc()
+    fetch(app.globalData.server + "/GetPatientInfo", {
+      method: 'POST',
+      body: {
+        Pid: this.data.Pid,
+        IdType: this.data.IdType,
+      }
+    }).then (
+      response => {
+        response.json().then(
+          info => {
+            if (info.success || info.success == "true") {
+              app.globalData.info = info.data
+              wx.navigateTo({
+                url: '../info/info',
+              })
+            } else {
+              console.error('getPidInfo error', info.errorMessage)
+              wx.showModal({
+                title: '查询病人所有信息错误',
+                content: info.errorMessage,
+                showCancel: false,
+              })
+            }
+          },
+          error => {
+            console.error('getPidInfo JSON parser error', error)
+            wx.showModal({
+              title: '查询病人所有信息JSON解析错误',
+              content: JSON.stringify(error),
+              showCancel: false,
+            })
+          }
+        )
+      },
+      error => {
+        console.error('getPidInfo request error', error)
         wx.showModal({
-          title: '查询病人所有信息错误',
-          content: info.errorMessage,
+          title: '查询病人所有信息网络错误',
+          content: JSON.stringify(error),
           showCancel: false,
         })
       }
-    } catch(e) {
-      console.error('getPidInfo JSON parser error', e.toString())
-      wx.showModal({
-        title: '查询病人所有信息错误',
-        content: e.toString(),
-        showCancel: false,
-      })
-    }
+    )
   },
 
   onLoad: function () {

@@ -1,6 +1,18 @@
 // pages/record/record.js
 const app = getApp()
 
+const { Api, JsonRpc, JsSignatureProvider, Serialize } = require('../../miniprogram_npm/icbsc.js/index.js')
+const { fetchFunc } = require('../../miniprogram_npm/icbsc-fetch.js/index.js');
+const { TextDecoder, TextEncoder } = require('../../miniprogram_npm/icbsc-text-encoding.js/index.js')
+const privateKey1 = "PVT_SM2_hrjc7PFDDjSNgGdsP33uXMBeV2abGzNHumnPyMhfhiCbXoKMh"
+const privateKeys = [privateKey1];
+const signatureProvider = new JsSignatureProvider(privateKeys);
+const rpc = new JsonRpc(app.globalData.nodeserver, { fetch: fetchFunc() });
+const textDecoder = new TextDecoder()
+const textEncoder = new TextEncoder()
+const api = new Api({ rpc, signatureProvider, textDecoder, textEncoder });
+
+
 Page({
 
   /**
@@ -9,6 +21,20 @@ Page({
   data: {
     data: null,
     index: -1,
+  },
+
+  // 用于上链后 查询区块 检验用
+  getDeserializeContextFreeData: function(blockNum) {
+    setTimeout(function() {
+      rpc.get_block(blockNum).then(res => {
+        var data = res.transactions[0].trx.packed_context_free_data
+        var uintData = Serialize.hexToUint8Array(data)
+        var rawdatas = api.deserializeContextFreeData(uintData)
+        for (let i in rawdatas) {
+          console.debug('查询区块数据:', textDecoder.decode(rawdatas[i]))
+        }
+      })
+    }, 500);
   },
 
   pushRecordButton: function () {
@@ -21,8 +47,59 @@ Page({
       return
     }
 
-    // 上链
-    console.debug("pushRecord: ", this.data)
+    let record = this.data.data[this.data.index]
+    console.debug("pushRecord: ", record)
+
+    let context_free_data = []
+    try {
+      // 解码后上链
+      let recordbuf = wx.base64ToArrayBuffer(record.record)
+      context_free_data.push(new Uint8Array(recordbuf))
+    } catch(e) {
+      wx.showModal({
+        title: '病例上链序列化预处理错误',
+        content: JSON.stringify(err, null, 2),
+        showCancel: false,
+      })
+      return
+    }
+
+    api.transact({
+      actions: [{
+        account: 'icbs.test',
+        name: 'addrecord',
+        authorization: [{
+          actor: 'xiaobaiyang3',
+          permission: 'active'
+        }],
+        data: {
+          mpId: record.mpId,
+          pid: record.pid,
+          times: record.times
+        }
+      }],
+      context_free_data,
+    }, {
+        blocksBehind: 3,
+        expireSeconds: 150
+      }).then(result => {
+        console.log(result)
+        wx.showModal({
+          title: '病例上链成功',
+          content: JSON.stringify(result, null, 2),
+          showCancel: false,
+        })
+
+        //测试上链数据是否正确
+        this.getDeserializeContextFreeData(result.processed.block_num)
+      }).catch(err => {
+        console.log(err)
+        wx.showModal({
+          title: '病例上链错误',
+          content: JSON.stringify(err, null, 2),
+          showCancel: false,
+        })
+      })
   },
 
   viewRecordButton: function () {
@@ -35,8 +112,25 @@ Page({
       return
     }
 
-    // base64
-    app.globalData.recordxml = this.data.data[this.data.index].record
+    // base64解码
+    let recordstr
+    let recordbuf
+    try {
+      recordbuf = wx.base64ToArrayBuffer(this.data.data[this.data.index].record)
+      // 字符串log显示
+      recordstr = textDecoder.decode(new Uint8Array(recordbuf))
+      console.debug(recordstr)
+    } catch (err) {
+      wx.showModal({
+        title: '展示病人病例xml解码错误',
+        content: JSON.stringify(err, null, 2),
+        showCancel: false,
+      })
+      return
+    }
+
+    // 解码后的xml
+    app.globalData.recordxml = recordstr
     wx.navigateTo({
       url: '../recordxml/recordxml',
     })

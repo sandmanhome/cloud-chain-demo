@@ -1,4 +1,8 @@
 // pages/info/info.js
+
+const { fetchFunc } = require('../../miniprogram_npm/icbsc-fetch.js/index.js');
+const url = "http://example.com"
+
 //获取应用实例
 const app = getApp()
 
@@ -23,31 +27,53 @@ Page({
       })
       return
     }
-
-    console.debug("getRecord para: ", this.data.data[this.data.index])
-    try {
-      let record = JSON.parse(testRecord);
-      if (record.success || record.success == "true") {
-        app.globalData.record = record.data
-        wx.navigateTo({
-          url: '../record/record',
-        })
-      } else {
-        console.error('getRecord error', record.errorMessage)
+    
+    let record = this.data.data[this.data.index]
+    console.debug("getRecord para: ", record)
+    let fetch = fetchFunc()
+    fetch(app.globalData.server + "/GetPatientRecord", {
+      method: 'POST',
+      body: {
+        mpiId: record.mpiId,
+        times: record.times,
+      }
+    }).then(
+      response => {
+        response.json().then(
+          record => {
+            if (record.success || record.success == "true") {
+              app.globalData.record = record.data
+              wx.navigateTo({
+                url: '../record/record',
+              })
+            } else {
+              console.error('getRecord error', record.errorMessage)
+              wx.showModal({
+                title: '查询病人电子病例错误',
+                content: record.errorMessage,
+                showCancel: false,
+              })
+            }
+          },
+          error => {
+            console.error('getRecord JSON parser error', error)
+            wx.showModal({
+              title: '查询病人电子病例JSON解析错误',
+              content: JSON.stringify(error),
+              showCancel: false,
+            })
+          }
+        )
+      },
+      error => {
+        console.error('getRecord request error', error)
         wx.showModal({
-          title: '查修病人病例错误',
-          content: record.errorMessage,
+          title: '查询病人电子病例网络错误',
+          content: JSON.stringify(error),
           showCancel: false,
         })
       }
-    } catch (e) {
-      console.error('getRecord JSON parser error', e.toString())
-      wx.showModal({
-        title: '查询病人电子病例错误',
-        content: e.toString(),
-        showCancel: false,
-      })
-    }
+    )
   },
 
   radioChange: function (e) {

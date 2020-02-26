@@ -9,6 +9,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "xmldom": "^0.2.1"
+    "buffer": "^5.4.3",
+    "icbsc-fetch.js": "^0.0.6",
+    "icbsc-text-encoding.js": "^0.7.1",
+    "icbsc.js": "^1.0.10"
   }
 }
