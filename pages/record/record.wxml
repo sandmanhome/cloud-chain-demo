@@ -1,0 +1,14 @@
+<!--pages/record/record.wxml-->
+  <view class="row">
+    <button bindtap="pushRecordButton">pushRecord</button>
+
+    <button bindtap="viewRecordButton">viewRecord</button>
+  </view>
+  <view>
+  <radio-group class="radio-group" bindchange="radioChange">
+      <label class="radio" style="display: flex"  wx:for="{{data}}" wx:key="key"  wx:for-item="item" wx:for-index="index">
+          <radio value="{{index}}" checked="{{index==0 ? true:false}}"/>mpiId: {{item.mpiId}} pid: {{item.pid}} times: {{item.times}}
+      </label>
+  </radio-group>
+  </view>
+

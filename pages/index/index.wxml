@@ -1,0 +1,14 @@
+<!--index.wxml-->
+<view class="container">
+  <view class="row">
+    <text>身份类型:</text>
+    <input bindinput="pidTypeInput" placeholder="请输入身份类型" value="{{pidType}}"/>
+  </view>
+  <view class="row">
+    <text>身份id:</text>
+    <input bindinput="pidInput" placeholder="请输入身份id" value="{{pid}}"/>
+  </view>
+  <view class="row">
+    <button bindtap="getPidInfoButton">getPidInfo</button>
+  </view>
+</view>

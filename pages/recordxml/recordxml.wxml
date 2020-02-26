@@ -1,0 +1,2 @@
+<!--pages/recordxml/recordxml.wxml-->
+<view>{{data}}</view>
