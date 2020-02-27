@@ -8,7 +8,7 @@ const privateKey1 = "PVT_SM2_hrjc7PFDDjSNgGdsP33uXMBeV2abGzNHumnPyMhfhiCbXoKMh"
 const privateKeys = [privateKey1];
 const signatureProvider = new JsSignatureProvider(privateKeys);
 const rpc = new JsonRpc(app.globalData.nodeserver, { fetch: fetchFunc() });
-const textDecoder = new TextDecoder()
+const textDecoder = new TextDecoder('utf-8')
 const textEncoder = new TextEncoder()
 const api = new Api({ rpc, signatureProvider, textDecoder, textEncoder });
 
@@ -30,8 +30,10 @@ Page({
         var data = res.transactions[0].trx.packed_context_free_data
         var uintData = Serialize.hexToUint8Array(data)
         var rawdatas = api.deserializeContextFreeData(uintData)
+        let datastr
         for (let i in rawdatas) {
-          console.debug('查询区块数据:', textDecoder.decode(rawdatas[i]))
+          datastr = textDecoder.decode(new Uint8Array(rawdatas[i]))
+          console.debug('查询区块数据:', datastr)
         }
       })
     }, 500);
@@ -117,9 +119,9 @@ Page({
     let recordbuf
     try {
       recordbuf = wx.base64ToArrayBuffer(this.data.data[this.data.index].record)
-      // 字符串log显示
+      console.log(recordbuf)
       recordstr = textDecoder.decode(new Uint8Array(recordbuf))
-      console.debug(recordstr)
+      console.log(recordstr)
     } catch (err) {
       wx.showModal({
         title: '展示病人病例xml解码错误',
