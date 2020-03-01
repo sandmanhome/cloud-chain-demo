@@ -9,7 +9,7 @@ const testInfo = '{"data":[{"visitTime":"2012-11-30","diagnosis":" 高血压","m
 Page({
   data: {
     IdType: 0,
-    Pid: "420106201101011919",
+    Pid: "29056",
   },
   //事件处理函数
   getPidInfo: function() {
@@ -30,7 +30,7 @@ Page({
   getPidInfoButton: function() {
     console.debug("getPidInfo: ", this.data)
     let fetch = fetchFunc()
-    fetch(app.globalData.server + "/GetPatientInfo", {
+    fetch(app.globalData.server + "/GetPatientIinfo", {
       method: 'POST',
       body: {
         Pid: this.data.Pid,
