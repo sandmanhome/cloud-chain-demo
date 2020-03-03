@@ -75,7 +75,7 @@ Page({
           permission: 'active'
         }],
         data: {
-          mpId: record.mpId,
+          mpiId: record.mpiId,
           pid: record.pid,
           times: record.times
         }
